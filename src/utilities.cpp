@@ -49,7 +49,6 @@ int loadData(const char* filename, bool ignoreFirstRow) {
 	string token;
 	stringstream ss;
 
-
 	if (ignoreFirstRow == true) {
 		getline(inputfile, line);
 	}
@@ -58,25 +57,50 @@ int loadData(const char* filename, bool ignoreFirstRow) {
 
 		getline(inputfile, line);
 		ss.str(line);
+
 		process_stats stat;
+		bool corrupt = false;
+		string::iterator itr;
+		int comma = 0;
+		for (itr = line.begin(); itr != line.end(); itr++) {
+			if (*itr == CHAR_TO_SEARCH_FOR) {
+				comma++;
+			}
+		}
 
 		getline(ss, token, CHAR_TO_SEARCH_FOR);
+		if (token.empty() && atoi(token.c_str()) == 0) {
+			corrupt = true;
+		}
 		stat.process_number = atoi(token.c_str());
 
 		getline(ss, token, CHAR_TO_SEARCH_FOR);
+		if (token.empty() && atoi(token.c_str()) == 0) {
+			corrupt = true;
+		}
 		stat.start_time = atoi(token.c_str());
 
 		getline(ss, token, CHAR_TO_SEARCH_FOR);
+		if (token.empty() && atoi(token.c_str()) == 0) {
+			corrupt = true;
+		}
 		stat.cpu_time = atoi(token.c_str());
 
 		getline(ss, token, CHAR_TO_SEARCH_FOR);
+		if (token.empty() && atoi(token.c_str()) == 0) {
+			corrupt = true;
+		}
 		stat.io_time = atoi(token.c_str());
 
-		stats.push_back(stat);
+		if (corrupt == false && comma == 3) {
+			stats.push_back(stat);
+		}
 
 		ss.clear();
-
 	}
+
+	inputfile.close();
+
 	return SUCCESS;
 }
 
@@ -97,13 +121,12 @@ void sortData(SORT_ORDER mySortOrder) {
 		sort(stats.begin(), stats.end(), compareStartStats);
 		break;
 	}
-
 }
 
 process_stats getNext() {
 	process_stats myFirst;
-	stats.erase(stats.begin());
 	myFirst = stats.front();
+	stats.erase(stats.begin());
 	return myFirst;
 }
 
